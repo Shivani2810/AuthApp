@@ -3,6 +3,8 @@
 
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
+const jwt= require("jsonwebtoken");
+require("dotenv").config(); 
 
 // signup route handler
 exports.signup = async (req, res) => {
@@ -79,14 +81,29 @@ exports.login = async (req, res) => {
       });
     }
 
+    const payload={
+      email:User.email,
+      id:User._id,
+      role:User._role,
+      }
+
     // validate password
     if (await bcrypt.compare(password, validateUser.password)) {
       // ✅ you must respond here (later JWT)
-      return res.status(200).json({
-        success: true,
-        message: "Password matched",
-      });
-    } else {
+      let jwt=jwt.sign(payload,
+        process.env.JWT_SECRET,
+        {
+          expiresIn:"2h",
+
+        }
+      );
+     validateUser.token=token;
+    validateUser.password=undefined;
+     return res.cookie()
+
+    } 
+
+    else {
       return res.status(403).json({
         success: false,
         message: "Incorrect Password",
