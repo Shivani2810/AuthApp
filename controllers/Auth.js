@@ -53,3 +53,51 @@ exports.signup = async (req, res) => {
     });
   }
 };
+
+
+// Login Controller
+
+exports.login = async (req, res) => {
+  try {
+    // data fetch
+    const { email, password } = req.body;
+
+    // validation
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Kindly fill complete details",
+      });
+    }
+
+    const validateUser = await User.findOne({ email });
+
+    if (!validateUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found; signup first",
+      });
+    }
+
+    // validate password
+    if (await bcrypt.compare(password, validateUser.password)) {
+      // ✅ you must respond here (later JWT)
+      return res.status(200).json({
+        success: true,
+        message: "Password matched",
+      });
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: "Incorrect Password",
+      });
+    }
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Could not Login for some reason",
+    });
+  }
+};
