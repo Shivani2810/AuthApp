@@ -1,38 +1,33 @@
 const express = require("express");
 const router = express.Router();
 
-const { signup } = require("../controllers/Auth");
-const {login } = require("../controllers/Auth");
-
+const { signup, login } = require("../controllers/Auth");
+const { auth, isStudent, isAdmin } = require("../middleware/midauth");
 
 router.post("/signup", signup);
-router.post("/login",login)
-
+router.post("/login", login);
 
 // Protected Routes
 
-
-
-// testing the middleware route
-router.get( "/test",midauth,(req,res)=>{
-    res.json({
-        success:true,
-        message:"Welcome to the student TEST",
-    })
-})
-
-router.get("/student",midauth,isStudent,(req,res)=>{
-    res.json({
-        success:true,
-        message:"Welcome to the student route",
-    })
+router.get("/test", auth, (req, res) => {
+  res.json({
+    success: true,
+    message: "Welcome to protected TEST route",
+  });
 });
 
-router.get("/admin",midauth,isAdmin,(req,res)=>{
-    res.json({
-        success:true,
-        message:"welcome to the routes for the admin",
-    })
-})
+router.get("/student", auth, isStudent, (req, res) => {
+  res.json({
+    success: true,
+    message: "Welcome to the student route",
+  });
+});
+
+router.get("/admin", auth, isAdmin, (req, res) => {
+  res.json({
+    success: true,
+    message: "Welcome to the routes for the admin",
+  });
+});
 
 module.exports = router;
