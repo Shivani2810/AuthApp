@@ -15,6 +15,10 @@ require("./config/database").connect();
 const user = require("./routes/User");
 app.use("/api/v1", user);
 
+app.get("/test", (req, res) => {
+  res.send("server working");
+});
+
 // activate server
 app.listen(PORT, () => {
   console.log(`app is listening at ${PORT}`);

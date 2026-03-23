@@ -1,10 +1,7 @@
-
-
-
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
-const jwt= require("jsonwebtoken");
-require("dotenv").config(); 
+const jwt = require("jsonwebtoken");
+
 
 // signup route handler
 exports.signup = async (req, res) => {
@@ -41,6 +38,8 @@ exports.signup = async (req, res) => {
       role,
     });
 
+    user.password = undefined;
+
     return res.status(200).json({
       success: true,
       message: "User created successfully",
@@ -58,7 +57,6 @@ exports.signup = async (req, res) => {
 
 
 // Login Controller
-
 exports.login = async (req, res) => {
   try {
     // data fetch
@@ -81,35 +79,38 @@ exports.login = async (req, res) => {
       });
     }
 
-    const payload={
-      email:User.email,
-      id:User._id,
-      role:User._role,
-      }
-
     // validate password
     if (await bcrypt.compare(password, validateUser.password)) {
-      // ✅ you must respond here (later JWT)
-      let jwt=jwt.sign(payload,
-        process.env.JWT_SECRET,
-        {
-          expiresIn:"2h",
+      const payload = {
+        email: validateUser.email,
+        id: validateUser._id,
+        role: validateUser.role,
+      };
 
-        }
-      );
-     validateUser.token=token;
-    validateUser.password=undefined;
-     return res.cookie()
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: "2h",
+      });
 
-    } 
+      validateUser.password = undefined;
 
+      const options = {
+        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+      };
+
+      return res.cookie("token", token, options).status(200).json({
+        success: true,
+        token,
+        validateUser,
+        message: "User logged in successfully",
+      });  
+    }
     else {
       return res.status(403).json({
         success: false,
         message: "Incorrect Password",
       });
     }
-
   } catch (error) {
     console.log(error);
     return res.status(500).json({
